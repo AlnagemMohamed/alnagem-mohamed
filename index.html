@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول المحاضرات التفاعلي المتجاوب</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f8f8f8;
+            padding: 20px;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            min-width: 800px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .time-header {
+            background: var(--secondary-color);
+        }
+
+        .lecture-cell {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .lecture-cell:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .lecture-cell.active {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 2px solid var(--secondary-color);
+        }
+
+        .lecture-cell.completed {
+            background-color: rgba(231, 76, 60, 0.1);
+            text-decoration: line-through;
+        }
+
+        .lecture-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .lecture-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lecture-details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .empty-cell {
+            background-color: #f8f9fa;
+        }
+
+        .review-cell {
+            background-color: rgba(255, 193, 7, 0.2);
+        }
+
+        .controls-panel {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: var(--secondary-color);
+        }
+
+        button.secondary:hover {
+            background: #27ae60;
+        }
+
+        button.accent {
+            background: var(--accent-color);
+        }
+
+        button.accent:hover {
+            background: #c0392b;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+        .notes-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .badge-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .badge-accent {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1001;
+        }
+
+        .color-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-controls {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+            
+            .lecture-title {
+                font-size: 12px;
+            }
+            
+            .lecture-details {
+                font-size: 10px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 5px 3px;
+                font-size: 12px;
+            }
+            
+            .lecture-title {
+                font-size: 10px;
+            }
+            
+            .lecture-details {
+                display: none;
+            }
+            
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ميزات إضافية */
+        .drag-over {
+            background-color: rgba(52, 152, 219, 0.3);
+        }
+
+        .priority-high {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .priority-medium {
+            border-left: 4px solid orange;
+        }
+
+        .priority-low {
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .search-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        .completed-check {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .context-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            padding: 5px 0;
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .export-options {
+            display: none;
+            position: absolute;
+            background: white;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>جدول المحاضرات التفاعلي</h1>
+                <p>إدارة وتنظيم جدول المحاضرات الدراسية</p>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle">تبديل المظهر</button>
+                <button id="export-btn">تصدير الجدول</button>
+                <button id="print-btn">طباعة الجدول</button>
+                <button id="add-lecture-btn">إضافة محاضرة</button>
+            </div>
+        </header>
+
+        <div class="week-navigation">
+            <button id="prev-week">الأسبوع السابق</button>
+            <span id="current-week">الأسبوع الحالي: 1</span>
+            <button id="next-week">الأسبوع التالي</button>
+        </div>
+
+        <div class="controls-panel">
+            <button id="mark-completed">تعليم كمكتمل</button>
+            <button id="clear-completed">إزالة التحديد</button>
+            <button id="filter-btn">تصفية المحاضرات</button>
+            <button id="search-btn">بحث في الجدول</button>
+            <button id="reminder-btn">إضافة تذكير</button>
+            <button id="stats-btn">إحصائيات</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: rgba(46, 204, 113, 0.2);"></div>
+                <span>نشط</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: rgba(231, 76, 60, 0.1);"></div>
+                <span>مكتمل</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: rgba(255, 193, 7, 0.2);"></div>
+                <span>مراجعة</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: #f8f9fa;"></div>
+                <span>فراغ</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="schedule-table">
+                <thead>
+                    <tr>
+                        <th>الوقت</th>
+                        <th>الإثنين</th>
+                        <th>الثلاثاء</th>
+                        <th>الأربعاء</th>
+                        <th>الخميس</th>
+                        <th>السبت</th>
+                        <th>الأحد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- سيتم ملء الجدول ديناميكياً باستخدام JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-value" id="total-lectures">0</div>
+                <div>إجمالي المحاضرات</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completed-lectures">0</div>
+                <div>المحاضرات المكتملة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="remaining-lectures">0</div>
+                <div>المحاضرات المتبقية</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="study-hours">0</div>
+                <div>ساعات الدراسة</div>
+            </div>
+        </div>
+
+        <div class="notes-panel">
+            <h3>الملاحظات اليومية</h3>
+            <textarea id="daily-notes" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                <button id="save-notes">حفظ الملاحظات</button>
+                <button id="clear-notes">مسح الملاحظات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة محاضرة -->
+    <div class="modal" id="add-lecture-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة محاضرة جديدة</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="add-lecture-form">
+                <div class="form-group">
+                    <label for="lecture-name">اسم المحاضرة</label>
+                    <input type="text" id="lecture-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="lecture-day">اليوم</label>
+                    <select id="lecture-day" required>
+                        <option value="الإثنين">الإثنين</option>
+                        <option value="الثلاثاء">الثلاثاء</option>
+                        <option value="الأربعاء">الأربعاء</option>
+                        <option value="الخميس">الخميس</option>
+                        <option value="السبت">السبت</option>
+                        <option value="الأحد">الأحد</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="lecture-time">الوقت</label>
+                    <select id="lecture-time" required>
+                        <option value="4:00 - 5:00">4:00 - 5:00</option>
+                        <option value="5:15 - 6:15">5:15 - 6:15</option>
+                        <option value="6:30 - 7:30">6:30 - 7:30</option>
+                        <option value="7:45 - 8:45">7:45 - 8:45</option>
+                        <option value="9:00 - 10:00">9:00 - 10:00</option>
+                        <option value="10:15 - 11:00">10:15 - 11:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="lecture-details">تفاصيل إضافية</label>
+                    <input type="text" id="lecture-details">
+                </div>
+                <div class="form-group">
+                    <label for="lecture-priority">الأولوية</label>
+                    <select id="lecture-priority">
+                        <option value="low">منخفضة</option>
+                        <option value="medium">متوسطة</option>
+                        <option value="high">عالية</option>
+                    </select>
+                </div>
+                <button type="submit" class="secondary">إضافة المحاضرة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة الإحصائيات -->
+    <div class="modal" id="stats-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إحصائيات الدراسة</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="stats-content">
+                <!-- سيتم ملء المحتوى ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- إشعارات -->
+    <div class="notification" id="notification"></div>
+
+    <!-- قائمة السياق -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" data-action="complete">تعليم كمكتمل</div>
+        <div class="context-menu-item" data-action="edit">تعديل المحاضرة</div>
+        <div class="context-menu-item" data-action="delete">حذف المحاضرة</div>
+        <div class="context-menu-item" data-action="set-reminder">إضافة تذكير</div>
+    </div>
+
+    <script>
+        // البيانات الأولية للجدول
+        const initialScheduleData = {
+            "4:00 - 5:00": {
+                "الإثنين": { title: "Anatomy 1", details: "English 1" },
+                "الثلاثاء": { title: "Microbio 4-11", details: "" },
+                "الأربعاء": { title: "Anatomy 3", details: "" },
+                "الخميس": { title: "مراجعة", details: "", type: "review" },
+                "السبت": { title: "مراجعة", details: "", type: "review" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            },
+            "5:15 - 6:15": {
+                "الإثنين": { title: "Anatomy 2", details: "English 2" },
+                "الثلاثاء": { title: "Ethics 1", details: "" },
+                "الأربعاء": { title: "Anatomy 4", details: "" },
+                "الخميس": { title: "مراجعة", details: "", type: "review" },
+                "السبت": { title: "مراجعة", details: "", type: "review" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            },
+            "6:30 - 7:30": {
+                "الإثنين": { title: "Physiology 1", details: "Biochem: Minerals" },
+                "الثلاثاء": { title: "Microbio 12-19", details: "" },
+                "الأربعاء": { title: "Physiology 5", details: "" },
+                "الخميس": { title: "فراغ", details: "", type: "empty" },
+                "السبت": { title: "فراغ", details: "", type: "empty" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            },
+            "7:45 - 8:45": {
+                "الإثنين": { title: "Physiology 3", details: "Biochem: Carb" },
+                "الثلاثاء": { title: "Ethics 2", details: "" },
+                "الأربعاء": { title: "Physiology 7", details: "" },
+                "الخميس": { title: "فراغ", details: "", type: "empty" },
+                "السبت": { title: "فراغ", details: "", type: "empty" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            },
+            "9:00 - 10:00": {
+                "الإثنين": { title: "Body Mechanics", details: "Biochem: Iso" },
+                "الثلاثاء": { title: "Ethics 3", details: "" },
+                "الأربعاء": { title: "Gloves", details: "" },
+                "الخميس": { title: "فراغ", details: "", type: "empty" },
+                "السبت": { title: "فراغ", details: "", type: "empty" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            },
+            "10:15 - 11:00": {
+                "الإثنين": { title: "Vital Signs", details: "English 3" },
+                "الثلاثاء": { title: "Ethics 4", details: "" },
+                "الأربعاء": { title: "Hand Washing", details: "" },
+                "الخميس": { title: "فراغ", details: "", type: "empty" },
+                "السبت": { title: "فراغ", details: "", type: "empty" },
+                "الأحد": { title: "", details: "", type: "empty" }
+            }
+        };
+
+        // حالة التطبيق
+        let appState = {
+            currentWeek: 1,
+            scheduleData: JSON.parse(JSON.stringify(initialScheduleData)),
+            completedLectures: {},
+            notes: localStorage.getItem('lectureNotes') || '',
+            theme: localStorage.getItem('theme') || 'light'
+        };
+
+        // تهيئة التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            renderScheduleTable();
+            setupEventListeners();
+            loadSavedData();
+            updateStats();
+        });
+
+        function initApp() {
+            // تطبيق السمة المحفوظة
+            if (appState.theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+            
+            // تعيين الملاحظات المحفوظة
+            document.getElementById('daily-notes').value = appState.notes;
+        }
+
+        function renderScheduleTable() {
+            const tableBody = document.querySelector('#schedule-table tbody');
+            tableBody.innerHTML = '';
+
+            const times = Object.keys(appState.scheduleData);
+            
+            times.forEach(time => {
+                const row = document.createElement('tr');
+                
+                // خلية الوقت
+                const timeCell = document.createElement('td');
+                timeCell.textContent = time;
+                timeCell.classList.add('time-header');
+                row.appendChild(timeCell);
+                
+                // خلايا الأيام
+                const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'السبت', 'الأحد'];
+                days.forEach(day => {
+                    const cell = document.createElement('td');
+                    const lecture = appState.scheduleData[time][day];
+                    
+                    if (lecture.title) {
+                        cell.classList.add('lecture-cell');
+                        
+                        // إضافة فئة حسب نوع المحاضرة
+                        if (lecture.type === 'review') {
+                            cell.classList.add('review-cell');
+                        } else if (lecture.type === 'empty') {
+                            cell.classList.add('empty-cell');
+                        }
+                        
+                        // إضافة فئة الأولوية إذا كانت موجودة
+                        if (lecture.priority) {
+                            cell.classList.add(`priority-${lecture.priority}`);
+                        }
+                        
+                        // التحقق إذا كانت المحاضرة مكتملة
+                        const lectureId = `${time}-${day}-${lecture.title}`;
+                        if (appState.completedLectures[lectureId]) {
+                            cell.classList.add('completed');
+                        }
+                        
+                        // إنشاء محتوى الخلية
+                        const lectureInfo = document.createElement('div');
+                        lectureInfo.classList.add('lecture-info');
+                        
+                        const title = document.createElement('div');
+                        title.classList.add('lecture-title');
+                        title.textContent = lecture.title;
+                        
+                        const details = document.createElement('div');
+                        details.classList.add('lecture-details');
+                        details.textContent = lecture.details;
+                        
+                        lectureInfo.appendChild(title);
+                        if (lecture.details) {
+                            lectureInfo.appendChild(details);
+                        }
+                        
+                        // إضافة زر الإكمال إذا لم تكن محاضرة مراجعة أو فراغ
+                        if (!lecture.type) {
+                            const completedCheck = document.createElement('input');
+                            completedCheck.type = 'checkbox';
+                            completedCheck.classList.add('completed-check');
+                            completedCheck.checked = appState.completedLectures[lectureId] || false;
+                            completedCheck.addEventListener('change', function() {
+                                toggleLectureCompletion(lectureId, this.checked);
+                            });
+                            cell.appendChild(completedCheck);
+                        }
+                        
+                        cell.appendChild(lectureInfo);
+                        
+                        // إضافة سمة البيانات للمحاضرة
+                        cell.dataset.lectureId = lectureId;
+                        cell.dataset.time = time;
+                        cell.dataset.day = day;
+                    } else {
+                        cell.classList.add('empty-cell');
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function setupEventListeners() {
+            // أحداث الأزرار
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            document.getElementById('export-btn').addEventListener('click', showExportOptions);
+            document.getElementById('print-btn').addEventListener('click', printSchedule);
+            document.getElementById('add-lecture-btn').addEventListener('click', showAddLectureModal);
+            document.getElementById('mark-completed').addEventListener('click', markSelectedCompleted);
+            document.getElementById('clear-completed').addEventListener('click', clearCompleted);
+            document.getElementById('filter-btn').addEventListener('click', showFilterOptions);
+            document.getElementById('search-btn').addEventListener('click', showSearchModal);
+            document.getElementById('reminder-btn').addEventListener('click', showReminderModal);
+            document.getElementById('stats-btn').addEventListener('click', showStatsModal);
+            document.getElementById('save-notes').addEventListener('click', saveNotes);
+            document.getElementById('clear-notes').addEventListener('click', clearNotes);
+            document.getElementById('prev-week').addEventListener('click', goToPrevWeek);
+            document.getElementById('next-week').addEventListener('click', goToNextWeek);
+            
+            // أحداث النماذج
+            document.getElementById('add-lecture-form').addEventListener('submit', addNewLecture);
+            
+            // أحداث إغلاق النماذج
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // النقر خارج النماذج يغلقها
+            window.addEventListener('click', function(event) {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // تفعيل قائمة السياق بالنقر بزر الماوس الأيمن
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.classList.contains('lecture-cell')) {
+                    e.preventDefault();
+                    showContextMenu(e, e.target);
+                }
+            });
+            
+            // إخفاء قائمة السياق عند النقر في أي مكان
+            document.addEventListener('click', function() {
+                hideContextMenu();
+            });
+            
+            // أحداث قائمة السياق
+            document.querySelectorAll('.context-menu-item').forEach(item => {
+                item.addEventListener('click', handleContextMenuAction);
+            });
+            
+            // تفعيل السحب والإفلات
+            setupDragAndDrop();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            appState.theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            localStorage.setItem('theme', appState.theme);
+            showNotification('تم تبديل المظهر');
+        }
+
+        function showExportOptions() {
+            // في التطبيق الكامل، سيتم تنفيذ خيارات التصدير المختلفة
+            showNotification('خيارات التصدير: PDF, Excel, صورة');
+            // تنفيذ بسيط لتصدير كصورة
+            html2canvas(document.querySelector('.table-container')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'جدول-المحاضرات.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function printSchedule() {
+            window.print();
+        }
+
+        function showAddLectureModal() {
+            document.getElementById('add-lecture-modal').style.display = 'flex';
+        }
+
+        function addNewLecture(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('lecture-name').value;
+            const day = document.getElementById('lecture-day').value;
+            const time = document.getElementById('lecture-time').value;
+            const details = document.getElementById('lecture-details').value;
+            const priority = document.getElementById('lecture-priority').value;
+            
+            // إضافة المحاضرة إلى البيانات
+            if (!appState.scheduleData[time][day].title) {
+                appState.scheduleData[time][day] = {
+                    title: name,
+                    details: details,
+                    priority: priority
+                };
+                
+                // إعادة عرض الجدول
+                renderScheduleTable();
+                
+                // إغلاق النافذة
+                document.getElementById('add-lecture-modal').style.display = 'none';
+                
+                // إعادة تعيين النموذج
+                document.getElementById('add-lecture-form').reset();
+                
+                showNotification('تم إضافة المحاضرة بنجاح');
+                updateStats();
+            } else {
+                showNotification('هذا الوقت محجوز مسبقاً', 'error');
+            }
+        }
+
+        function toggleLectureCompletion(lectureId, completed) {
+            if (completed) {
+                appState.completedLectures[lectureId] = true;
+            } else {
+                delete appState.completedLectures[lectureId];
+            }
+            
+            // تحديث التخزين المحلي
+            saveCompletedLectures();
+            
+            // تحديث الإحصائيات
+            updateStats();
+        }
+
+        function markSelectedCompleted() {
+            // في التطبيق الكامل، سيكون هناك تحديد للمحاضرات
+            showNotification('حدد المحاضرات ثم انقر هنا لتعليمها كمكتملة');
+        }
+
+        function clearCompleted() {
+            if (confirm('هل تريد إزالة تحديد جميع المحاضرات المكتملة؟')) {
+                appState.completedLectures = {};
+                saveCompletedLectures();
+                renderScheduleTable();
+                updateStats();
+                showNotification('تم إزالة التحديد من جميع المحاضرات');
+            }
+        }
+
+        function showFilterOptions() {
+            showNotification('خيارات التصفية: المكتملة، النشطة، حسب الأولوية');
+        }
+
+        function showSearchModal() {
+            const searchTerm = prompt('أدخل مصطلح البحث:');
+            if (searchTerm) {
+                highlightSearchResults(searchTerm);
+            }
+        }
+
+        function highlightSearchResults(term) {
+            // إزالة التمييز السابق
+            document.querySelectorAll('.search-highlight').forEach(el => {
+                el.classList.remove('search-highlight');
+            });
+            
+            // تمييز النتائج الجديدة
+            let found = 0;
+            document.querySelectorAll('.lecture-cell').forEach(cell => {
+                const text = cell.textContent.toLowerCase();
+                if (text.includes(term.toLowerCase())) {
+                    cell.classList.add('search-highlight');
+                    found++;
+                }
+            });
+            
+            if (found > 0) {
+                showNotification(`تم العثور على ${found} نتيجة للبحث عن "${term}"`);
+            } else {
+                showNotification(`لم يتم العثور على نتائج للبحث عن "${term}"`, 'error');
+            }
+        }
+
+        function showReminderModal() {
+            showNotification('إضافة تذكير للمحاضرات المحددة');
+        }
+
+        function showStatsModal() {
+            const statsContent = document.getElementById('stats-content');
+            const total = document.getElementById('total-lectures').textContent;
+            const completed = document.getElementById('completed-lectures').textContent;
+            const remaining = document.getElementById('remaining-lectures').textContent;
+            const hours = document.getElementById('study-hours').textContent;
+            
+            statsContent.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <h4>إحصائيات الدراسة</h4>
+                    <p>إجمالي المحاضرات: ${total}</p>
+                    <p>المكتملة: ${completed}</p>
+                    <p>المتبقية: ${remaining}</p>
+                    <p>ساعات الدراسة الأسبوعية: ${hours}</p>
+                </div>
+                <div>
+                    <h4>التقدم</h4>
+                    <div style="background: #f0f0f0; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+                        <div style="background: #2ecc71; height: 100%; width: ${(completed / total * 100) || 0}%;"></div>
+                    </div>
+                    <p>نسبة الإنجاز: ${Math.round((completed / total * 100) || 0)}%</p>
+                </div>
+            `;
+            
+            document.getElementById('stats-modal').style.display = 'flex';
+        }
+
+        function saveNotes() {
+            appState.notes = document.getElementById('daily-notes').value;
+            localStorage.setItem('lectureNotes', appState.notes);
+            showNotification('تم حفظ الملاحظات');
+        }
+
+        function clearNotes() {
+            if (confirm('هل تريد مسح جميع الملاحظات؟')) {
+                document.getElementById('daily-notes').value = '';
+                saveNotes();
+            }
+        }
+
+        function goToPrevWeek() {
+            if (appState.currentWeek > 1) {
+                appState.currentWeek--;
+                document.getElementById('current-week').textContent = `الأسبوع الحالي: ${appState.currentWeek}`;
+                showNotification(`الانتقال إلى الأسبوع ${appState.currentWeek}`);
+            }
+        }
+
+        function goToNextWeek() {
+            appState.currentWeek++;
+            document.getElementById('current-week').textContent = `الأسبوع الحالي: ${appState.currentWeek}`;
+            showNotification(`الانتقال إلى الأسبوع ${appState.currentWeek}`);
+        }
+
+        function showContextMenu(e, target) {
+            const contextMenu = document.getElementById('context-menu');
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = `${e.pageX}px`;
+            contextMenu.style.top = `${e.pageY}px`;
+            contextMenu.dataset.targetId = target.dataset.lectureId;
+        }
+
+        function hideContextMenu() {
+            document.getElementById('context-menu').style.display = 'none';
+        }
+
+        function handleContextMenuAction(e) {
+            const action = e.target.dataset.action;
+            const lectureId = document.getElementById('context-menu').dataset.targetId;
+            
+            switch(action) {
+                case 'complete':
+                    toggleLectureCompletion(lectureId, true);
+                    renderScheduleTable();
+                    break;
+                case 'edit':
+                    // في التطبيق الكامل، سيتم فتح نموذج التعديل
+                    showNotification('تعديل المحاضرة: ' + lectureId);
+                    break;
+                case 'delete':
+                    if (confirm('هل تريد حذف هذه المحاضرة؟')) {
+                        // في التطبيق الكامل، سيتم حذف المحاضرة
+                        showNotification('حذف المحاضرة: ' + lectureId);
+                    }
+                    break;
+                case 'set-reminder':
+                    showNotification('إضافة تذكير للمحاضرة: ' + lectureId);
+                    break;
+            }
+            
+            hideContextMenu();
+        }
+
+        function setupDragAndDrop() {
+            // في التطبيق الكامل، سيتم تنفيذ السحب والإفلات لإعادة ترتيب المحاضرات
+        }
+
+        function updateStats() {
+            let total = 0;
+            let completed = 0;
+            
+            // حساب إجمالي المحاضرات والمكتملة
+            Object.keys(appState.scheduleData).forEach(time => {
+                Object.keys(appState.scheduleData[time]).forEach(day => {
+                    const lecture = appState.scheduleData[time][day];
+                    if (lecture.title && !lecture.type) {
+                        total++;
+                        const lectureId = `${time}-${day}-${lecture.title}`;
+                        if (appState.completedLectures[lectureId]) {
+                            completed++;
+                        }
+                    }
+                });
+            });
+            
+            // تحديث واجهة المستخدم
+            document.getElementById('total-lectures').textContent = total;
+            document.getElementById('completed-lectures').textContent = completed;
+            document.getElementById('remaining-lectures').textContent = total - completed;
+            
+            // حساب ساعات الدراسة (افتراضيًا 1 ساعة لكل محاضرة)
+            document.getElementById('study-hours').textContent = total;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'error' ? 'var(--accent-color)' : 'var(--secondary-color)';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function loadSavedData() {
+            // تحميل البيانات المحفوظة من التخزين المحلي
+            const savedCompleted = localStorage.getItem('completedLectures');
+            if (savedCompleted) {
+                appState.completedLectures = JSON.parse(savedCompleted);
+            }
+        }
+
+        function saveCompletedLectures() {
+            localStorage.setItem('completedLectures', JSON.stringify(appState.completedLectures));
+        }
+
+        // دالة html2canvas للتصدير (سيتم استبدالها بمكتبة فعلية في التطبيق الكامل)
+        function html2canvas(element) {
+            return new Promise(resolve => {
+                // في التطبيق الكامل، سيتم استخدام مكتبة html2canvas الفعلية
+                // هذا تنفيذ بدائي لأغراض العرض
+                const canvas = document.createElement('canvas');
+                canvas.width = element.offsetWidth;
+                canvas.height = element.offsetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'black';
+                ctx.font = '14px Arial';
+                ctx.fillText('جدول المحاضرات - تم التصدير', 10, 20);
+                resolve(canvas);
+            });
+        }
+    </script>
+</body>
+</html>
